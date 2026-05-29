@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: fact_sales
+    description: "One row per order item. Core fact table for revenue analysis."
+    columns:
+      - name: order_item_id
+        tests: [unique, not_null]
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: product_key
+      - name: customer_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customer')
+              field: customer_key
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: sale_price
+        tests: [not_null]
+  - name: dim_customer
+    description: "One row per customer."
+    columns:
+      - name: customer_key
+        tests: [unique, not_null]
+      - name: age_bucket
+        tests:
+          - accepted_values:
+              values: ['18-24','25-34','35-44','45-54','55+']
+  - name: dim_product
+    description: "One row per product."
+    columns:
+      - name: product_key
+        tests: [unique, not_null]
+      - name: price_tier
+        tests:
+          - accepted_values:
+              values: ['Budget','Mid-range','Premium','Luxury']
+  - name: dim_date
+    description: "Generated calendar table 2019-2026."
+    columns:
+      - name: date_key
+        tests: [unique, not_null]

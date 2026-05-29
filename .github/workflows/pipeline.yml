@@ -1,0 +1,81 @@
+name: TheLook ELT Pipeline
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "thelook_dbt/models/**"
+      - "ingestion/**"
+
+env:
+  PROJECT_ID: ntupace   # ← replace
+  DBT_PROFILES_DIR: ./thelook_dbt
+
+jobs:
+  ingest:
+    name: "1 · Ingest raw tables"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install google-cloud-bigquery db-dtypes
+      - uses: google-github-actions/auth@v2
+        with: { credentials_json: "${{ secrets.GCP_SA_KEY }}" }
+      - run: python ingestion/ingest_thelook.py
+
+  transform:
+    name: "2 · dbt run + test"
+    needs: ingest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install dbt-bigquery
+      - uses: google-github-actions/auth@v2
+        with: { credentials_json: "${{ secrets.GCP_SA_KEY }}" }
+      - name: Write dbt profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat <<PROFILE > ~/.dbt/profiles.yml
+          thelook_dbt:
+            target: prod
+            outputs:
+              prod:
+                type: bigquery
+                method: service-account-json
+                project: ${{ env.PROJECT_ID }}
+                dataset: thelook_warehouse
+                location: US
+                threads: 4
+                timeout_seconds: 300
+                keyfile_json: ${{ secrets.GCP_SA_KEY }}
+          PROFILE
+      - working-directory: thelook_dbt
+        run: dbt deps
+      - working-directory: thelook_dbt
+        run: dbt run --target prod
+      - working-directory: thelook_dbt
+        run: dbt test --target prod
+
+  quality:
+    name: "3 · Data quality report"
+    needs: transform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install google-cloud-bigquery pandas db-dtypes
+      - uses: google-github-actions/auth@v2
+        with: { credentials_json: "${{ secrets.GCP_SA_KEY }}" }
+      - run: mkdir -p reports && python tests/quality_report.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quality-report-${{ github.run_id }}
+          path: reports/quality_report.csv
+          retention-days: 30
