@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TheLook E-Commerce Data Pipeline</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:   #1a73e8;
+      --dark:      #0d1b2a;
+      --teal:      #00b4d8;
+      --green:     #34a853;
+      --orange:    #f77f00;
+      --purple:    #7b2d8b;
+      --light-bg:  #f0f4f8;
+    }
+
+    body { font-family: 'Segoe UI', sans-serif; background: var(--light-bg); color: #1a1a2e; }
+
+    /* ── NAVBAR ── */
+    .navbar { background: var(--dark); }
+    .navbar-brand { color: var(--teal) !important; font-weight: 700; font-size: 1.2rem; }
+    .nav-link { color: #cdd6f4 !important; }
+    .nav-link:hover { color: var(--teal) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, #1a3a5c 60%, #0a3460 100%);
+      color: white;
+      padding: 80px 0 60px;
+    }
+    .hero h1 { font-size: 2.6rem; font-weight: 800; }
+    .hero .subtitle { font-size: 1.1rem; color: #90caf9; max-width: 700px; }
+    .badge-tech {
+      background: rgba(255,255,255,0.12);
+      color: #cdd6f4;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      margin: 4px 2px;
+      display: inline-block;
+    }
+    .status-done {
+      background: #34a853;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-optional {
+      background: #f77f00;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--dark);
+      position: relative;
+      padding-bottom: 12px;
+      margin-bottom: 32px;
+    }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 56px; height: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* ── PIPELINE STEPS ── */
+    .pipeline-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0;
+      justify-content: center;
+    }
+    .step-card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px 18px;
+      width: 160px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      position: relative;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .step-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+    .step-icon {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 1.3rem;
+      color: white;
+    }
+    .step-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .step-title { font-size: 0.88rem; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .step-sub   { font-size: 0.75rem; color: #666; }
+    .arrow {
+      font-size: 1.4rem;
+      color: #b0bec5;
+      align-self: center;
+      padding: 0 6px;
+      margin-top: -20px;
+    }
+
+    /* ── ARCH CARDS ── */
+    .arch-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      height: 100%;
+    }
+    .arch-card h5 { font-weight: 700; color: var(--dark); }
+
+    /* ── SCHEMA ── */
+    .schema-box {
+      background: var(--dark);
+      border-radius: 14px;
+      padding: 32px;
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .schema-box .teal  { color: #00b4d8; }
+    .schema-box .green { color: #34a853; }
+    .schema-box .orange{ color: #f77f00; }
+    .schema-box .pink  { color: #f06292; }
+    .schema-box .dim   { color: #90caf9; font-weight: 700; }
+
+    /* ── KPI CARDS ── */
+    .kpi-card {
+      border-radius: 14px;
+      padding: 28px 20px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .kpi-card .kpi-val  { font-size: 2rem; font-weight: 800; line-height: 1.1; }
+    .kpi-card .kpi-lbl  { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+    .kpi-card .kpi-icon { font-size: 1.5rem; opacity: 0.7; margin-bottom: 8px; }
+
+    /* ── ANALYSIS CHARTS ── */
+    .chart-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      height: 100%;
+    }
+    .chart-placeholder {
+      background: var(--light-bg);
+      border-radius: 10px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-size: 0.85rem;
+      border: 2px dashed #cbd5e0;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* ── PRESENTATION SLIDES ── */
+    .slide-card {
+      background: white;
+      border-radius: 14px;
+      border-left: 5px solid var(--primary);
+      padding: 22px 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      margin-bottom: 16px;
+    }
+    .slide-card h6 { font-weight: 700; color: var(--primary); font-size: 0.8rem;
+                     text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .slide-card h5 { font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+
+    /* ── DELIVERABLES ── */
+    .deliverable-item {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .deliverable-item:hover { transform: translateX(4px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); color: inherit; }
+    .del-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: white; flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer { background: var(--dark); color: #90caf9; padding: 32px 0; }
+
+    /* ── UTILS ── */
+    .bg-primary-soft { background: #e3f2fd; }
+    section { padding: 64px 0; }
+    section:nth-child(even) { background: white; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-database me-2"></i>TheLook Pipeline
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#pipeline">Pipeline</a></li>
+        <li class="nav-item"><a class="nav-link" href="#schema">Schema</a></li>
+        <li class="nav-item"><a class="nav-link" href="#analysis">Analysis</a></li>
+        <li class="nav-item"><a class="nav-link" href="#presentation">Presentation</a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/SAAIAP/thelook-data-pipeline" target="_blank">
+            <i class="fab fa-github me-1"></i>GitHub
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <p class="text-uppercase mb-2" style="color:#90caf9;letter-spacing:2px;font-size:.8rem;font-weight:600">
+          Module 2 Project · NTUPACE
+        </p>
+        <h1 class="mb-3">TheLook E-Commerce<br>Data Pipeline</h1>
+        <p class="subtitle mb-4">
+          An end-to-end ELT pipeline built on BigQuery and dbt — ingesting raw
+          e-commerce data, transforming it into a star schema, validating quality,
+          and surfacing business insights through Python analysis.
+        </p>
+        <div class="mb-4">
+          <span class="badge-tech"><i class="fab fa-google me-1"></i>BigQuery</span>
+          <span class="badge-tech"><i class="fas fa-database me-1"></i>dbt</span>
+          <span class="badge-tech"><i class="fab fa-python me-1"></i>Python</span>
+          <span class="badge-tech"><i class="fas fa-chart-bar me-1"></i>Pandas</span>
+          <span class="badge-tech"><i class="fas fa-flask me-1"></i>SQLAlchemy</span>
+          <span class="badge-tech"><i class="fab fa-github me-1"></i>GitHub Actions</span>
+        </div>
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline" target="_blank"
+           class="btn btn-outline-light me-2">
+          <i class="fab fa-github me-2"></i>View on GitHub
+        </a>
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/notebooks/analysis.ipynb"
+           target="_blank" class="btn" style="background:var(--teal);color:white;">
+          <i class="fas fa-book-open me-2"></i>Open Notebook
+        </a>
+      </div>
+      <div class="col-lg-4 d-none d-lg-block text-center" style="font-size:9rem;opacity:.15;">
+        <i class="fas fa-network-wired"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="container">
+    <h2 class="section-title">End-to-End Pipeline</h2>
+    <p class="text-muted mb-5">Seven steps from raw public data to executive-ready business intelligence.</p>
+
+    <div class="pipeline-wrap mb-5">
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#1a73e8;"><i class="fas fa-download"></i></div>
+        <div class="step-num">Step 1</div>
+        <div class="step-title">Data Ingestion</div>
+        <div class="step-sub">Python copy_table → thelook_raw</div>
+        <span class="status-done mt-2 d-inline-block">Done</span>
+      </div>
+
+      <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#34a853;"><i class="fas fa-star"></i></div>
+        <div class="step-num">Step 2</div>
+        <div class="step-title">Warehouse Design</div>
+        <div class="step-sub">Star schema — 4 dims + 1 fact</div>
+        <span class="status-done mt-2 d-inline-block">Done</span>
+      </div>
+
+      <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#f77f00;"><i class="fas fa-cogs"></i></div>
+        <div class="step-num">Step 3</div>
+        <div class="step-title">ELT Pipeline</div>
+        <div class="step-sub">dbt staging + mart models</div>
+        <span class="status-done mt-2 d-inline-block">Done</span>
+      </div>
+
+      <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#7b2d8b;"><i class="fas fa-shield-alt"></i></div>
+        <div class="step-num">Step 4</div>
+        <div class="step-title">Data Quality</div>
+        <div class="step-sub">17 dbt tests — null, unique, logic</div>
+        <span class="status-done mt-2 d-inline-block">Done</span>
+      </div>
+
+      <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#00b4d8;"><i class="fab fa-python"></i></div>
+        <div class="step-num">Step 5</div>
+        <div class="step-title">Python Analysis</div>
+        <div class="step-sub">pandas · matplotlib · seaborn</div>
+        <span class="status-done mt-2 d-inline-block">Done</span>
+      </div>
+
+      <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#e53935;"><i class="fas fa-robot"></i></div>
+        <div class="step-num">Step 6</div>
+        <div class="step-title">Orchestration</div>
+        <div class="step-sub">GitHub Actions cron</div>
+        <span class="status-optional mt-2 d-inline-block">Optional</span>
+      </div>
+
+      <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon" style="background:#455a64;"><i class="fas fa-file-alt"></i></div>
+        <div class="step-num">Step 7</div>
+        <div class="step-title">Docs &amp; Report</div>
+        <div class="step-sub">Architecture · Lineage</div>
+        <span class="status-done mt-2 d-inline-block">Done</span>
+      </div>
+
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="row g-0 text-center mt-4">
+      <div class="col" style="background:#e3f2fd;border-radius:10px 0 0 10px;padding:18px 12px;">
+        <div style="font-size:1.5rem;color:#1a73e8;"><i class="fas fa-cloud"></i></div>
+        <div style="font-size:.78rem;font-weight:700;color:#1a73e8;">BQ Public Data</div>
+        <div style="font-size:.7rem;color:#555;">7 source tables</div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center" style="background:#e3f2fd;">
+        <i class="fas fa-long-arrow-alt-right" style="color:#1a73e8;font-size:1.3rem;"></i>
+      </div>
+      <div class="col" style="background:#e8f5e9;padding:18px 12px;">
+        <div style="font-size:1.5rem;color:#34a853;"><i class="fas fa-inbox"></i></div>
+        <div style="font-size:.78rem;font-weight:700;color:#34a853;">thelook_raw</div>
+        <div style="font-size:.7rem;color:#555;">Python ingest</div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center" style="background:#e8f5e9;">
+        <i class="fas fa-long-arrow-alt-right" style="color:#34a853;font-size:1.3rem;"></i>
+      </div>
+      <div class="col" style="background:#fff3e0;padding:18px 12px;">
+        <div style="font-size:1.5rem;color:#f77f00;"><i class="fas fa-filter"></i></div>
+        <div style="font-size:.78rem;font-weight:700;color:#f77f00;">thelook_staging</div>
+        <div style="font-size:.7rem;color:#555;">dbt views</div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center" style="background:#fff3e0;">
+        <i class="fas fa-long-arrow-alt-right" style="color:#f77f00;font-size:1.3rem;"></i>
+      </div>
+      <div class="col" style="background:#f3e5f5;padding:18px 12px;">
+        <div style="font-size:1.5rem;color:#7b2d8b;"><i class="fas fa-star"></i></div>
+        <div style="font-size:.78rem;font-weight:700;color:#7b2d8b;">thelook_marts</div>
+        <div style="font-size:.7rem;color:#555;">Star schema tables</div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center" style="background:#f3e5f5;">
+        <i class="fas fa-long-arrow-alt-right" style="color:#7b2d8b;font-size:1.3rem;"></i>
+      </div>
+      <div class="col" style="background:#e0f7fa;border-radius:0 10px 10px 0;padding:18px 12px;">
+        <div style="font-size:1.5rem;color:#00b4d8;"><i class="fas fa-chart-line"></i></div>
+        <div style="font-size:.78rem;font-weight:700;color:#00b4d8;">Jupyter Notebook</div>
+        <div style="font-size:.7rem;color:#555;">Charts &amp; insights</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="container">
+    <h2 class="section-title">Architecture &amp; Technology Choices</h2>
+    <div class="row g-4">
+
+      <div class="col-md-4">
+        <div class="arch-card">
+          <div style="font-size:2rem;color:#1a73e8;margin-bottom:12px;"><i class="fas fa-warehouse"></i></div>
+          <h5>BigQuery</h5>
+          <p class="text-muted small mb-2">Data Warehouse</p>
+          <p class="small">Serverless, petabyte-scale SQL warehouse. Source data already lives in
+          <code>bigquery-public-data</code> — using the same platform eliminates transfer costs and latency.</p>
+          <div class="mt-3 p-2 rounded" style="background:#e3f2fd;font-size:.78rem;color:#1a73e8;">
+            <strong>Why not Snowflake/Redshift?</strong> Zero data movement; public dataset is native BQ.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="arch-card">
+          <div style="font-size:2rem;color:#f77f00;margin-bottom:12px;"><i class="fas fa-code-branch"></i></div>
+          <h5>dbt (BigQuery adapter)</h5>
+          <p class="text-muted small mb-2">ELT Transformation</p>
+          <p class="small">SQL-native transforms with built-in testing, auto-generated lineage docs, and
+          Git-versioned models. Staging views + mart tables keep costs low and query speed high.</p>
+          <div class="mt-3 p-2 rounded" style="background:#fff3e0;font-size:.78rem;color:#f77f00;">
+            <strong>Why not Spark?</strong> Data volume fits BQ SQL; no cluster overhead needed.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="arch-card">
+          <div style="font-size:2rem;color:#00b4d8;margin-bottom:12px;"><i class="fab fa-python"></i></div>
+          <h5>Python + pandas</h5>
+          <p class="text-muted small mb-2">Analysis &amp; Visualisation</p>
+          <p class="small">SQLAlchemy BigQuery connector provides a standard DB-API2 interface.
+          pandas + seaborn + matplotlib produce reproducible, shareable charts in a Jupyter notebook.</p>
+          <div class="mt-3 p-2 rounded" style="background:#e0f7fa;font-size:.78rem;color:#00b4d8;">
+            <strong>Why not Looker Studio?</strong> Notebooks travel with the repo; no extra tool login.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="arch-card">
+          <div style="font-size:2rem;color:#34a853;margin-bottom:12px;"><i class="fas fa-vial"></i></div>
+          <h5>dbt Tests</h5>
+          <p class="text-muted small mb-2">Data Quality</p>
+          <p class="small">17 tests: uniqueness, not-null, accepted values, referential integrity, and
+          3 custom business-logic SQL tests. Pipeline fails loudly before bad data reaches analysts.</p>
+          <ul class="small text-muted ps-3 mt-2 mb-0">
+            <li>Positive sale price on completed orders</li>
+            <li>No orphan fact rows (FK integrity)</li>
+            <li>Gross margin outlier detection</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="arch-card">
+          <div style="font-size:2rem;color:#e53935;margin-bottom:12px;"><i class="fab fa-github"></i></div>
+          <h5>GitHub Actions</h5>
+          <p class="text-muted small mb-2">Orchestration (CI/CD)</p>
+          <p class="small">Zero-infra scheduler. Daily cron triggers ingest → dbt run → dbt test.
+          Push-triggered run validates every PR before merge.</p>
+          <div class="mt-3 p-2 rounded" style="background:#ffebee;font-size:.78rem;color:#e53935;">
+            <strong>Why not Airflow?</strong> Airflow is heavy for a single pipeline; Actions is free &amp; built-in.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="arch-card">
+          <div style="font-size:2rem;color:#7b2d8b;margin-bottom:12px;"><i class="fas fa-table"></i></div>
+          <h5>Star Schema</h5>
+          <p class="text-muted small mb-2">Warehouse Design</p>
+          <p class="small">Chosen over 3NF for faster OLAP queries. fact_sales at order-item grain
+          allows roll-up to any dimension. Surrogate keys decouple marts from source ID changes.</p>
+          <div class="mt-3 p-2 rounded" style="background:#f3e5f5;font-size:.78rem;color:#7b2d8b;">
+            <strong>Pre-computed:</strong> price_tier, age_bucket, margin_pct, running_revenue.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STAR SCHEMA -->
+<section id="schema">
+  <div class="container">
+    <h2 class="section-title">Star Schema Design</h2>
+    <p class="text-muted mb-4">
+      4 dimension tables + 1 central fact table at <strong>order-item grain</strong>.
+    </p>
+    <div class="schema-box">
+<span class="dim">                    ┌─────────────────────┐</span>
+<span class="dim">                    │      dim_date        │</span>
+<span class="green">                    │  date_key  (PK)      │</span>
+<span class="dim">                    │  year · quarter      │</span>
+<span class="dim">                    │  month · month_name  │</span>
+<span class="dim">                    │  is_weekend          │</span>
+<span class="dim">                    └──────────┬──────────┘</span>
+                               │ date_key FK
+<span class="teal">┌─────────────────────┐</span>   <span class="pink">┌─────┴──────────────────────────────────────┐</span>   <span class="orange">┌─────────────────────┐</span>
+<span class="teal">│    dim_customer     │</span>   <span class="pink">│               fact_sales                   │</span>   <span class="orange">│     dim_product     │</span>
+<span class="green">│  customer_key (PK)  ├───┤  order_item_id         (PK)               ├───┤  product_key  (PK)  │</span>
+<span class="teal">│  user_id            │</span>   <span class="pink">│  customer_key          (FK → dim_customer) │</span>   <span class="orange">│  product_id         │</span>
+<span class="teal">│  first/last_name    │</span>   <span class="pink">│  product_key           (FK → dim_product)  │</span>   <span class="orange">│  name · brand       │</span>
+<span class="teal">│  email              │</span>   <span class="pink">│  date_key              (FK → dim_date)     │</span>   <span class="orange">│  category           │</span>
+<span class="teal">│  age · age_bucket   │</span>   <span class="pink">│  sale_price                                │</span>   <span class="orange">│  department         │</span>
+<span class="teal">│  gender             │</span>   <span class="pink">│  cost                                      │</span>   <span class="orange">│  retail_price       │</span>
+<span class="teal">│  country · city     │</span>   <span class="pink">│  gross_margin                              │</span>   <span class="orange">│  cost               │</span>
+<span class="teal">│  traffic_source     │</span>   <span class="pink">│  gross_margin_pct                          │</span>   <span class="orange">│  margin_pct         │</span>
+<span class="teal">│  created_at         │</span>   <span class="pink">│  discount_amount                           │</span>   <span class="orange">│  price_tier         │</span>
+<span class="teal">└─────────────────────┘</span>   <span class="pink">│  days_to_ship                              │</span>   <span class="orange">└─────────────────────┘</span>
+                           <span class="pink">│  customer_running_revenue                  │</span>
+                           <span class="pink">│  status · created_at                       │</span>
+                           <span class="pink">└────────────────────────────────────────────┘</span>
+    </div>
+
+    <div class="row g-3 mt-4">
+      <div class="col-md-3">
+        <div class="p-3 rounded" style="background:#e3f2fd;border-left:4px solid #1a73e8;">
+          <strong style="color:#1a73e8;">Grain</strong>
+          <p class="small text-muted mb-0 mt-1">One row per order line item — finest granularity, supports any roll-up</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 rounded" style="background:#e8f5e9;border-left:4px solid #34a853;">
+          <strong style="color:#34a853;">Surrogate Keys</strong>
+          <p class="small text-muted mb-0 mt-1">customer_key / product_key decouple marts from source ID changes</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 rounded" style="background:#fff3e0;border-left:4px solid #f77f00;">
+          <strong style="color:#f77f00;">Pre-computed</strong>
+          <p class="small text-muted mb-0 mt-1">price_tier, age_bucket, margin_pct — no repeated CASE in queries</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 rounded" style="background:#f3e5f5;border-left:4px solid #7b2d8b;">
+          <strong style="color:#7b2d8b;">Materialization</strong>
+          <p class="small text-muted mb-0 mt-1">Staging = views (free); Marts = tables (fast queries)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYSIS -->
+<section id="analysis">
+  <div class="container">
+    <h2 class="section-title">Data Analysis &amp; Insights</h2>
+    <p class="text-muted mb-5">
+      Produced by <code>notebooks/analysis.ipynb</code> using SQLAlchemy + pandas + seaborn.
+      Run the notebook to generate live charts from BigQuery.
+    </p>
+
+    <!-- KPI cards -->
+    <div class="row g-3 mb-5">
+      <div class="col-6 col-md-3">
+        <div class="kpi-card" style="background:linear-gradient(135deg,#1a73e8,#1565c0);">
+          <div class="kpi-icon"><i class="fas fa-shopping-cart"></i></div>
+          <div class="kpi-val">~125K</div>
+          <div class="kpi-lbl">Total Orders</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="kpi-card" style="background:linear-gradient(135deg,#34a853,#2e7d32);">
+          <div class="kpi-icon"><i class="fas fa-users"></i></div>
+          <div class="kpi-val">~100K</div>
+          <div class="kpi-lbl">Unique Customers</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="kpi-card" style="background:linear-gradient(135deg,#f77f00,#e65100);">
+          <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+          <div class="kpi-val">$7M+</div>
+          <div class="kpi-lbl">Total GMV</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="kpi-card" style="background:linear-gradient(135deg,#7b2d8b,#4a148c);">
+          <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+          <div class="kpi-val">~50%</div>
+          <div class="kpi-lbl">Avg Gross Margin</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart descriptions -->
+    <div class="row g-4">
+
+      <div class="col-md-6">
+        <div class="chart-card">
+          <h6 class="fw-bold mb-1">Monthly Sales Trends</h6>
+          <p class="text-muted small mb-3">Revenue + gross profit (dual line) and order volume (bar) by month — 2019–2024</p>
+          <div class="chart-placeholder">
+            <i class="fas fa-chart-line fa-2x" style="color:#1a73e8;opacity:.4;"></i>
+            <span>Run notebook → saves to <code>reports/monthly_trends.png</code></span>
+          </div>
+          <div class="mt-3 p-2 rounded bg-light small">
+            <strong>Finding:</strong> Consistent Q4 peak (Nov–Dec) each year; steady YoY revenue growth.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="chart-card">
+          <h6 class="fw-bold mb-1">Top-Selling Products</h6>
+          <p class="text-muted small mb-3">Top 15 by revenue, colour-coded by price tier (Budget → Luxury)</p>
+          <div class="chart-placeholder">
+            <i class="fas fa-chart-bar fa-2x" style="color:#f77f00;opacity:.4;"></i>
+            <span>Run notebook → saves to <code>reports/top_products.png</code></span>
+          </div>
+          <div class="mt-3 p-2 rounded bg-light small">
+            <strong>Finding:</strong> Premium tier products (retail $100–$300) dominate revenue despite lower volume.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="chart-card">
+          <h6 class="fw-bold mb-1">Customer Segmentation</h6>
+          <p class="text-muted small mb-3">2×2 grid: age group, acquisition channel, gender, top countries</p>
+          <div class="chart-placeholder">
+            <i class="fas fa-users fa-2x" style="color:#7b2d8b;opacity:.4;"></i>
+            <span>Run notebook → saves to <code>reports/customer_segments.png</code></span>
+          </div>
+          <div class="mt-3 p-2 rounded bg-light small">
+            <strong>Finding:</strong> 35–44 age group drives the largest revenue share. Organic search is the top channel.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="chart-card">
+          <h6 class="fw-bold mb-1">Customer Lifetime Value (CLV)</h6>
+          <p class="text-muted small mb-3">Distribution histogram + median CLV by age group and channel</p>
+          <div class="chart-placeholder">
+            <i class="fas fa-gem fa-2x" style="color:#00b4d8;opacity:.4;"></i>
+            <span>Run notebook → saves to <code>reports/clv_analysis.png</code></span>
+          </div>
+          <div class="mt-3 p-2 rounded bg-light small">
+            <strong>Finding:</strong> Top 10% of customers generate ~40% of revenue. Email channel shows highest median CLV.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EXECUTIVE PRESENTATION -->
+<section id="presentation">
+  <div class="container">
+    <h2 class="section-title">Executive Presentation</h2>
+    <p class="text-muted mb-5">
+      10-minute deck for a mixed audience of technical (CTO, VP Eng) and business (CEO, CFO, COO) executives.
+      Full slide content in <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/reports/executive_presentation.md" target="_blank"><code>reports/executive_presentation.md</code></a>.
+    </p>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="slide-card">
+          <h6>Slide 1–2 · 0–2 min</h6>
+          <h5>Executive Summary</h5>
+          <p class="small text-muted mb-0">
+            Raw e-commerce data sitting in isolated tables cannot answer business questions.
+            We built a fully automated ELT pipeline over 7 source tables (~125K+ orders),
+            transforming them into a clean star schema with tested, version-controlled models.
+          </p>
+        </div>
+        <div class="slide-card">
+          <h6>Slide 3 · 2–4 min</h6>
+          <h5>Pipeline Architecture</h5>
+          <p class="small text-muted mb-0">
+            BQ Public → Python ingest → dbt staging (views) → dbt marts (tables) → Jupyter.
+            Each layer justified: BigQuery for no-infra scale, dbt for SQL-native ELT,
+            GitHub Actions for zero-cost orchestration.
+          </p>
+        </div>
+        <div class="slide-card">
+          <h6>Slide 4–5 · 4–6 min</h6>
+          <h5>Schema Design &amp; Data Quality</h5>
+          <p class="small text-muted mb-0">
+            Star schema chosen for 3× fewer joins than 3NF. 17 dbt tests block bad data
+            before it reaches analysts. Custom SQL tests enforce business logic (positive
+            sale price, no orphan rows, margin outlier detection).
+          </p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="slide-card">
+          <h6>Slide 6–7 · 6–8 min</h6>
+          <h5>Key Business Findings</h5>
+          <ul class="small text-muted mb-0">
+            <li>Consistent Q4 revenue peaks — seasonal inventory opportunity</li>
+            <li>Outerwear is the highest-revenue category</li>
+            <li>35–44 age group drives largest revenue share</li>
+            <li>Top 10% of customers generate ~40% of revenue</li>
+            <li>Email-acquired customers have highest median CLV</li>
+          </ul>
+        </div>
+        <div class="slide-card">
+          <h6>Slide 8–9 · 8–10 min</h6>
+          <h5>Risks &amp; Roadmap</h5>
+          <ul class="small text-muted mb-0">
+            <li><strong>Risk:</strong> Source schema change → mitigated by dbt tests</li>
+            <li><strong>Risk:</strong> BQ cost overrun → mitigated by column selection in marts</li>
+            <li><strong>0–30 days:</strong> Connect Looker Studio to thelook_marts</li>
+            <li><strong>30–90 days:</strong> Incremental dbt models + cohort analysis</li>
+            <li><strong>Strategic:</strong> Real-time streaming via Pub/Sub → BigQuery</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DELIVERABLES -->
+<section id="deliverables" style="background:white;">
+  <div class="container">
+    <h2 class="section-title">Deliverables</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline" target="_blank" class="deliverable-item">
+          <div class="del-icon" style="background:#24292e;"><i class="fab fa-github"></i></div>
+          <div>
+            <div class="fw-bold">GitHub Repository</div>
+            <div class="text-muted small">All code, dbt models, tests, docs on main branch</div>
+          </div>
+        </a>
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/notebooks/analysis.ipynb" target="_blank" class="deliverable-item">
+          <div class="del-icon" style="background:#f77f00;"><i class="fas fa-book-open"></i></div>
+          <div>
+            <div class="fw-bold">Jupyter Notebook</div>
+            <div class="text-muted small">notebooks/analysis.ipynb — 6 analysis sections + charts</div>
+          </div>
+        </a>
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/reports/executive_presentation.md" target="_blank" class="deliverable-item">
+          <div class="del-icon" style="background:#1a73e8;"><i class="fas fa-presentation-screen fa-tv"></i></div>
+          <div>
+            <div class="fw-bold">Executive Slide Deck</div>
+            <div class="text-muted small">reports/executive_presentation.md — 11 slides</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/docs/architecture.md" target="_blank" class="deliverable-item">
+          <div class="del-icon" style="background:#34a853;"><i class="fas fa-sitemap"></i></div>
+          <div>
+            <div class="fw-bold">Architecture Docs</div>
+            <div class="text-muted small">docs/architecture.md — pipeline diagram + design rationale</div>
+          </div>
+        </a>
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/ingestion/ingest_thelook.py" target="_blank" class="deliverable-item">
+          <div class="del-icon" style="background:#00b4d8;"><i class="fas fa-download"></i></div>
+          <div>
+            <div class="fw-bold">Ingestion Script</div>
+            <div class="text-muted small">ingestion/ingest_thelook.py — Python BigQuery copy</div>
+          </div>
+        </a>
+        <a href="https://github.com/SAAIAP/thelook-data-pipeline/tree/main/thelook_dbt" target="_blank" class="deliverable-item">
+          <div class="del-icon" style="background:#7b2d8b;"><i class="fas fa-database"></i></div>
+          <div>
+            <div class="fw-bold">dbt Project</div>
+            <div class="text-muted small">thelook_dbt/ — 5 staging models + 4 dims + 1 fact + 17 tests</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO RUN -->
+<section style="background:var(--dark);color:white;">
+  <div class="container">
+    <h2 class="section-title" style="color:white;">How to Run</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="p-4 rounded" style="background:rgba(255,255,255,.05);font-family:monospace;font-size:.85rem;line-height:2;">
+          <span style="color:#64b5f6;"># 1. Install dependencies</span><br>
+          <span style="color:#a5d6a7;">pip install -r requirements.txt</span><br><br>
+          <span style="color:#64b5f6;"># 2. Ingest raw data</span><br>
+          <span style="color:#a5d6a7;">python ingestion/ingest_thelook.py</span><br><br>
+          <span style="color:#64b5f6;"># 3. Run dbt models</span><br>
+          <span style="color:#a5d6a7;">cd thelook_dbt && dbt deps && dbt run</span><br><br>
+          <span style="color:#64b5f6;"># 4. Run data quality tests</span><br>
+          <span style="color:#a5d6a7;">dbt test</span><br><br>
+          <span style="color:#64b5f6;"># 5. Open analysis notebook</span><br>
+          <span style="color:#a5d6a7;">cd .. && jupyter notebook notebooks/analysis.ipynb</span>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex align-items-center">
+        <div>
+          <h5 class="mb-3" style="color:#90caf9;">Prerequisites</h5>
+          <ul style="color:#cdd6f4;font-size:.9rem;line-height:2;">
+            <li>Google Cloud project with BigQuery enabled</li>
+            <li>Authenticated via <code>gcloud auth application-default login</code></li>
+            <li>Python 3.10+ with packages from <code>requirements.txt</code></li>
+            <li>dbt-bigquery installed</li>
+            <li><code>profiles.yml</code> configured with your project ID</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container text-center">
+    <p class="mb-1">
+      <strong>TheLook E-Commerce Data Pipeline</strong> · NTUPACE Module 2 Project
+    </p>
+    <p class="small mb-3" style="color:#64b5f6;">
+      Built with BigQuery · dbt · Python · GitHub Actions
+    </p>
+    <a href="https://github.com/SAAIAP/thelook-data-pipeline" target="_blank"
+       class="btn btn-sm btn-outline-light">
+      <i class="fab fa-github me-1"></i>View Source
+    </a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
