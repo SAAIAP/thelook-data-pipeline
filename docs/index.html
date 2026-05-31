@@ -185,19 +185,6 @@
       gap: 8px;
     }
 
-    /* ── PRESENTATION SLIDES ── */
-    .slide-card {
-      background: white;
-      border-radius: 14px;
-      border-left: 5px solid var(--primary);
-      padding: 22px 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-      margin-bottom: 16px;
-    }
-    .slide-card h6 { font-weight: 700; color: var(--primary); font-size: 0.8rem;
-                     text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .slide-card h5 { font-weight: 700; color: var(--dark); margin-bottom: 8px; }
-
     /* ── DELIVERABLES ── */
     .deliverable-item {
       background: white;
@@ -244,7 +231,6 @@
         <li class="nav-item"><a class="nav-link" href="#pipeline">Pipeline</a></li>
         <li class="nav-item"><a class="nav-link" href="#schema">Schema</a></li>
         <li class="nav-item"><a class="nav-link" href="#analysis">Analysis</a></li>
-        <li class="nav-item"><a class="nav-link" href="#presentation">Presentation</a></li>
         <li class="nav-item">
           <a class="nav-link" href="https://github.com/SAAIAP/thelook-data-pipeline" target="_blank">
             <i class="fab fa-github me-1"></i>GitHub
@@ -670,73 +656,6 @@
   </div>
 </section>
 
-<!-- EXECUTIVE PRESENTATION -->
-<section id="presentation">
-  <div class="container">
-    <h2 class="section-title">Executive Presentation</h2>
-    <p class="text-muted mb-5">
-      10-minute deck for a mixed audience of technical (CTO, VP Eng) and business (CEO, CFO, COO) executives.
-      Full slide content in <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/reports/executive_presentation.md" target="_blank"><code>reports/executive_presentation.md</code></a>.
-    </p>
-
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="slide-card">
-          <h6>Slide 1–2 · 0–2 min</h6>
-          <h5>Executive Summary</h5>
-          <p class="small text-muted mb-0">
-            Raw e-commerce data sitting in isolated tables cannot answer business questions.
-            We built a fully automated ELT pipeline over 7 source tables (~125K+ orders),
-            transforming them into a clean star schema with tested, version-controlled models.
-          </p>
-        </div>
-        <div class="slide-card">
-          <h6>Slide 3 · 2–4 min</h6>
-          <h5>Pipeline Architecture</h5>
-          <p class="small text-muted mb-0">
-            BQ Public → Python ingest → dbt staging (views) → dbt marts (tables) → Jupyter.
-            Each layer justified: BigQuery for no-infra scale, dbt for SQL-native ELT,
-            GitHub Actions for zero-cost orchestration.
-          </p>
-        </div>
-        <div class="slide-card">
-          <h6>Slide 4–5 · 4–6 min</h6>
-          <h5>Schema Design &amp; Data Quality</h5>
-          <p class="small text-muted mb-0">
-            Star schema chosen for 3× fewer joins than 3NF. 17 dbt tests block bad data
-            before it reaches analysts. Custom SQL tests enforce business logic (positive
-            sale price, no orphan rows, margin outlier detection).
-          </p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="slide-card">
-          <h6>Slide 6–7 · 6–8 min</h6>
-          <h5>Key Business Findings</h5>
-          <ul class="small text-muted mb-0">
-            <li>Consistent Q4 revenue peaks — seasonal inventory opportunity</li>
-            <li>Outerwear is the highest-revenue category</li>
-            <li>35–44 age group drives largest revenue share</li>
-            <li>Top 10% of customers generate ~40% of revenue</li>
-            <li>Email-acquired customers have highest median CLV</li>
-          </ul>
-        </div>
-        <div class="slide-card">
-          <h6>Slide 8–9 · 8–10 min</h6>
-          <h5>Risks &amp; Roadmap</h5>
-          <ul class="small text-muted mb-0">
-            <li><strong>Risk:</strong> Source schema change → mitigated by dbt tests</li>
-            <li><strong>Risk:</strong> BQ cost overrun → mitigated by column selection in marts</li>
-            <li><strong>0–30 days:</strong> Connect Looker Studio to thelook_marts</li>
-            <li><strong>30–90 days:</strong> Incremental dbt models + cohort analysis</li>
-            <li><strong>Strategic:</strong> Real-time streaming via Pub/Sub → BigQuery</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- DELIVERABLES -->
 <section id="deliverables" style="background:white;">
   <div class="container">
@@ -755,13 +674,6 @@
           <div>
             <div class="fw-bold">Jupyter Notebook</div>
             <div class="text-muted small">notebooks/analysis.ipynb — 6 analysis sections + charts</div>
-          </div>
-        </a>
-        <a href="https://github.com/SAAIAP/thelook-data-pipeline/blob/main/reports/executive_presentation.md" target="_blank" class="deliverable-item">
-          <div class="del-icon" style="background:#1a73e8;"><i class="fas fa-presentation-screen fa-tv"></i></div>
-          <div>
-            <div class="fw-bold">Executive Slide Deck</div>
-            <div class="text-muted small">reports/executive_presentation.md — 11 slides</div>
           </div>
         </a>
       </div>
